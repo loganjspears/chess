@@ -242,7 +242,7 @@ func TestPositionHash(t *testing.T) {
 		g2.MoveStr(s)
 	}
 	if g1.Position().Hash() != g2.Position().Hash() {
-		t.Fatalf("expected position hashes to be equal but got %s and %s", g1.Position().Hash(), g2.Position().Hash())
+		t.Fatalf("expected position hashes to be equal but got %v and %v", g1.Position().Hash(), g2.Position().Hash())
 	}
 }
 
@@ -278,15 +278,34 @@ func BenchmarkInvalidStalemateStatus(b *testing.B) {
 	}
 }
 
+var sink uint64
+
+type hashingWork struct {
+	pos *Position
+	mov *Move
+}
+
 func BenchmarkPositionHash(b *testing.B) {
-	fenStr := "8/3P4/8/8/8/7k/7p/7K w - - 2 70"
+	fenStr := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 	fen, err := FEN(fenStr)
 	if err != nil {
 		b.Fatal(err)
 	}
 	g := NewGame(fen)
 	b.ResetTimer()
+	works := []hashingWork{
+		{g.Position(), nil},
+	}
 	for n := 0; n < b.N; n++ {
-		g.Position().Hash()
+		work := works[0]
+		works = works[1:]
+		pos := work.pos
+		if work.mov != nil {
+			pos = work.pos.Update(work.mov)
+		}
+		sink = pos.Hash()
+		for _, move := range pos.ValidMoves() {
+			works = append(works, hashingWork{pos, move})
+		}
 	}
 }

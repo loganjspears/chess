@@ -1,9 +1,7 @@
 package chess
 
 import (
-	"crypto/md5"
 	"fmt"
-	"strconv"
 	"strings"
 )
 
@@ -50,6 +48,7 @@ type Position struct {
 	moveCount       int
 	inCheck         bool
 	validMoves      []*Move
+	hash            uint64
 }
 
 // Update returns a new position resulting from the given move.
@@ -72,6 +71,10 @@ func (pos *Position) Update(m *Move) *Position {
 	}
 	b := pos.board.copy()
 	b.update(m)
+	hash := uint64(0)
+	if pos.hash != 0 {
+		hash = updateZobristHash(pos, m)
+	}
 	return &Position{
 		board:           b,
 		turn:            pos.turn.Other(),
@@ -80,6 +83,7 @@ func (pos *Position) Update(m *Move) *Position {
 		halfMoveClock:   halfMove,
 		moveCount:       moveCount,
 		inCheck:         m.HasTag(Check),
+		hash:            hash,
 	}
 }
 
@@ -127,17 +131,11 @@ func (pos *Position) String() string {
 }
 
 // Hash returns a unique hash of the position
-func (pos *Position) Hash() [16]byte {
-	sq := "-"
-	if pos.enPassantSquare != NoSquare {
-		sq = pos.enPassantSquare.String()
+func (pos *Position) Hash() uint64 {
+	if pos.hash == 0 {
+		pos.hash = generateZobristHash(pos)
 	}
-	s := pos.turn.String() + ":" + pos.castleRights.String() + ":" + sq
-	for _, p := range allPieces {
-		bb := pos.board.bbForPiece(p)
-		s += ":" + strconv.FormatUint(uint64(bb), 16)
-	}
-	return md5.Sum([]byte(s))
+	return pos.hash
 }
 
 // MarshalText implements the encoding.TextMarshaler interface and
@@ -172,6 +170,7 @@ func (pos *Position) copy() *Position {
 		halfMoveClock:   pos.halfMoveClock,
 		moveCount:       pos.moveCount,
 		inCheck:         pos.inCheck,
+		hash:            pos.hash,
 	}
 }
 
