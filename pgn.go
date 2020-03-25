@@ -19,10 +19,11 @@ func GamesFromPGN(r io.Reader) ([]*Game, error) {
 	count := 0
 	totalCount := 0
 	br := bufio.NewReader(r)
-	for {
+	eof := false
+	for !eof {
 		line, err := br.ReadString('\n')
 		if err == io.EOF {
-			break
+			eof = true
 		} else if err != nil {
 			return nil, err
 		}
@@ -31,7 +32,7 @@ func GamesFromPGN(r io.Reader) ([]*Game, error) {
 		} else {
 			current += line
 		}
-		if count == 2 {
+		if count == 2 || eof {
 			game, err := decodePGN(current)
 			if err != nil {
 				return nil, err
