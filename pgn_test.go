@@ -70,6 +70,16 @@ var (
 			
 			1. Nd5 exd5 (1... hxg5 2. Nxe7+ Nxe7) 2. Bxf6 hxg5 3. Bxe7 1-0`,
 		},
+		{
+			// Technically this should be q in the final fen castling flag to be cannonical form, but we don't do that conversion yet.
+			PostPos: unsafeFEN("brk3q1/pp3p2/2prn2p/P5p1/4P3/1P4P1/2P2P1P/bK2NNQB b b - 1 17"),
+			PGN: `[Variant "Chess960"]
+			[FEN "brkr1nqb/pp1p1pp1/2pn3p/P3p3/4P3/6P1/1PPP1P1P/BRKRNNQB w DBdb - 0 9"]
+
+			9. d4 exd4 10. b3 Nf5 11. Bxd4 Nxd4 12. Rxd4 Ne6
+			13. Ra4 g5 14. Raa1 d6 15. O-O-O Bxa1 16. Rxd6 Rxd6
+			17. Kb1 *`,
+		},
 	}
 )
 

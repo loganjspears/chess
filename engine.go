@@ -1,5 +1,10 @@
 package chess
 
+import (
+	"strings"
+	"unicode"
+)
+
 type engine struct{}
 
 func (engine) CalcMoves(pos *Position, first bool) []*Move {
@@ -90,7 +95,7 @@ func standardMoves(pos *Position, first bool) []*Move {
 
 func addTags(m *Move, pos *Position) {
 	p := pos.board.Piece(m.s1)
-	if pos.board.isOccupied(m.s2) {
+	if pos.board.isOccupied(m.s2) && !m.HasTag(QueenSideCastle) && !m.HasTag(KingSideCastle) {
 		m.addTag(Capture)
 	} else if m.s2 == pos.enPassantSquare && p.Type() == Pawn {
 		m.addTag(EnPassant)
@@ -200,46 +205,149 @@ func bbForPossibleMoves(pos *Position, pt PieceType, sq Square) bitboard {
 	return bitboard(0)
 }
 
+func min(a, b File) File {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func max(a, b File) File {
+	if a > b {
+		return a
+	}
+	return b
+}
+
 // TODO can calc isInCheck twice
 func castleMoves(pos *Position) []*Move {
 	moves := []*Move{}
-	kingSide := pos.castleRights.CanCastle(pos.Turn(), KingSide)
-	queenSide := pos.castleRights.CanCastle(pos.Turn(), QueenSide)
-	// white king side
-	if pos.turn == White && kingSide &&
-		(^pos.board.emptySqs&(bbForSquare(F1)|bbForSquare(G1))) == 0 &&
-		!squaresAreAttacked(pos, F1, G1) &&
-		!pos.inCheck {
-		m := &Move{s1: E1, s2: G1}
-		m.addTag(KingSideCastle)
-		moves = append(moves, m)
+	kingSide := pos.castleRights.CanCastle(pos.Board(), pos.Turn(), KingSide)
+	queenSide := pos.castleRights.CanCastle(pos.Board(), pos.Turn(), QueenSide)
+	if !kingSide && !queenSide || pos.inCheck {
+		return moves
 	}
-	// white queen side
-	if pos.turn == White && queenSide &&
-		(^pos.board.emptySqs&(bbForSquare(B1)|bbForSquare(C1)|bbForSquare(D1))) == 0 &&
-		!squaresAreAttacked(pos, C1, D1) &&
-		!pos.inCheck {
-		m := &Move{s1: E1, s2: C1}
-		m.addTag(QueenSideCastle)
-		moves = append(moves, m)
+	kingFile := pos.board.whiteKingSq.File()
+	kingRank := Rank1
+	if pos.Turn() != White {
+		kingFile = pos.board.blackKingSq.File()
+		kingRank = Rank8
 	}
-	// black king side
-	if pos.turn == Black && kingSide &&
-		(^pos.board.emptySqs&(bbForSquare(F8)|bbForSquare(G8))) == 0 &&
-		!squaresAreAttacked(pos, F8, G8) &&
-		!pos.inCheck {
-		m := &Move{s1: E8, s2: G8}
-		m.addTag(KingSideCastle)
-		moves = append(moves, m)
-	}
-	// black queen side
-	if pos.turn == Black && queenSide &&
-		(^pos.board.emptySqs&(bbForSquare(B8)|bbForSquare(C8)|bbForSquare(D8))) == 0 &&
-		!squaresAreAttacked(pos, C8, D8) &&
-		!pos.inCheck {
-		m := &Move{s1: E8, s2: C8}
-		m.addTag(QueenSideCastle)
-		moves = append(moves, m)
+	for _, r := range string(pos.castleRights) {
+		if (pos.Turn() == White) != unicode.IsUpper(r) {
+			continue
+		}
+		rookFile := FileA
+		if pos.turn == White {
+			if string(r) == "K" {
+				for file := FileH; file > kingFile; file -= 1 {
+					if pos.board.bbWhiteRook.Occupied(getSquare(file, kingRank)) {
+						rookFile = file
+						break
+					}
+				}
+			} else if string(r) == "Q" {
+				for file := FileA; file < kingFile; file += 1 {
+					if pos.board.bbWhiteRook.Occupied(getSquare(file, kingRank)) {
+						rookFile = file
+						break
+					}
+				}
+			} else {
+				rookFile = File(int(FileA) + strings.Index(fileChars, strings.ToLower(string(r))))
+			}
+		} else {
+			if string(r) == "k" {
+				for file := FileH; file > kingFile; file -= 1 {
+					if pos.board.bbBlackRook.Occupied(getSquare(file, kingRank)) {
+						rookFile = file
+						break
+					}
+				}
+			} else if string(r) == "q" {
+				for file := FileA; file < kingFile; file += 1 {
+					if pos.board.bbBlackRook.Occupied(getSquare(file, kingRank)) {
+						rookFile = file
+						break
+					}
+				}
+			} else {
+				rookFile = File(int(FileA) + strings.Index(fileChars, string(r)))
+			}
+		}
+		if rookFile < kingFile {
+			// Validate Queen side legal.
+			ocupied := ^pos.board.emptySqs
+			count := 0
+			lower := min(rookFile, FileC)
+			higher := max(kingFile, FileD)
+			for file := lower; file <= higher; file += 1 {
+				if ocupied&bbForSquare(getSquare(file, kingRank)) != 0 {
+					count++
+				}
+			}
+			if count > 2 {
+				continue
+			}
+			legal := true
+			lower = min(kingFile, FileC)
+			higher = max(kingFile, FileC)
+			for file := lower; file <= higher; file += 1 {
+				if file == kingFile {
+					continue
+				}
+				if squaresAreAttacked(pos, getSquare(file, kingRank)) {
+					legal = false
+					break
+				}
+			}
+			if !legal {
+				continue
+			}
+			m := &Move{s1: getSquare(kingFile, kingRank), s2: getSquare(rookFile, kingRank)}
+			m.addTag(QueenSideCastle)
+			addTags(m, pos)
+			// filter out moves that put king into check
+			if !m.HasTag(inCheck) {
+				moves = append(moves, m)
+			}
+		} else {
+			// Validate King side legal.
+			ocupied := ^pos.board.emptySqs
+			count := 0
+			lower := min(kingFile, FileF)
+			higher := max(rookFile, FileG)
+			for file := lower; file <= higher; file += 1 {
+				if ocupied&bbForSquare(getSquare(file, kingRank)) != 0 {
+					count++
+				}
+			}
+			if count > 2 {
+				continue
+			}
+			legal := true
+			lower = min(kingFile, FileG)
+			higher = max(kingFile, FileG)
+			for file := lower; file <= higher; file += 1 {
+				if file == kingFile {
+					continue
+				}
+				if squaresAreAttacked(pos, getSquare(file, kingRank)) {
+					legal = false
+					break
+				}
+			}
+			if !legal {
+				continue
+			}
+			m := &Move{s1: getSquare(kingFile, kingRank), s2: getSquare(rookFile, kingRank)}
+			m.addTag(KingSideCastle)
+			addTags(m, pos)
+			// filter out moves that put king into check
+			if !m.HasTag(inCheck) {
+				moves = append(moves, m)
+			}
+		}
 	}
 	return moves
 }

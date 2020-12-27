@@ -15,7 +15,7 @@
 	},
 	{
 		"pos1" : "r2qk2r/pp1n1ppp/2pbpn2/3p4/2PP4/1PNQPN2/P4PPP/R1B1K2R w KQkq - 1 9",
-		"pos2" : "r2qk2r/pp1n1ppp/2pbpn2/3p4/2PP4/1PNQPN2/P4PPP/R1B2RK1 b kq - 0 9",
+		"pos2" : "r2qk2r/pp1n1ppp/2pbpn2/3p4/2PP4/1PNQPN2/P4PPP/R1B2RK1 b kq - 2 9",
 		"algText" : "O-O",
 		"longAlgText" : "e1g1",
 		"description" : "http://en.lichess.org/W91M4jms#17"
@@ -64,7 +64,7 @@
 	},
 	{
 		"pos1" : "rnbk1b1r/p3pppp/5n2/2p1p3/5B2/2N2P2/PPP3PP/R3KBNR w KQ - 0 10",
-		"pos2" : "rnbk1b1r/p3pppp/5n2/2p1p3/5B2/2N2P2/PPP3PP/2KR1BNR b - - 0 10",
+		"pos2" : "rnbk1b1r/p3pppp/5n2/2p1p3/5B2/2N2P2/PPP3PP/2KR1BNR b - - 1 10",
 		"algText" : "O-O-O+",
 		"longAlgText" : "e1c1",
 		"description" : "http://en.lichess.org/dimuEVR0#19"
@@ -131,5 +131,19 @@
 		"algText" : "N6d5",
 		"longAlgText" : "b6d5",
 		"description" : "https://lichess.org/editor/8/2B4R/1N6/2Q5/1N1N4/2N5/5k2/1K5R_w_-_-_17_72"
+	},
+	{
+		"pos1": "brkr2qb/pp3p2/2ppn2p/P5p1/4P3/1P4P1/2P2P1P/RRK1NNQB w Bkq - 0 15",
+		"pos2": "brkr2qb/pp3p2/2ppn2p/P5p1/4P3/1P4P1/2P2P1P/R1KRNNQB b kq - 1 15",
+		"algText": "O-O-O",
+		"longAlgText": "c1b1",
+		"description": "960 castling queen side of neighbouring pieces"
+	},
+	{
+		"pos1": "rnbqkb1r/ppp1pppp/8/3p4/4n3/3B1N2/PPPP1PPP/RNBQK2R w KQkq - 0 4",
+		"pos2": "rnbqkb1r/ppp1pppp/8/3p4/4n3/3B1N2/PPPP1PPP/RNBQ1RK1 b kq - 1 4",
+		"algText": "O-O",
+		"longAlgText": "e1h1",
+		"description": "Standard kingside castling but with 960 format long alg text"
 	}
 ]

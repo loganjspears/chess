@@ -94,20 +94,35 @@ func fenFormRank(rankStr string) (map[File]Piece, error) {
 }
 
 func formCastleRights(castleStr string) (CastleRights, error) {
+	if len(castleStr) > 4 {
+		return "-", fmt.Errorf("chess: fen invalid castle rights %s", castleStr)
+	}
 	// check for duplicates aka. KKkq right now is valid
-	for _, s := range []string{"K", "Q", "k", "q", "-"} {
+	for _, s := range []string{"K", "Q", "k", "q", "-", "A", "B", "C", "D", "E", "F", "G", "H", "a", "b", "c", "d", "e", "f", "g", "h"} {
 		if strings.Count(castleStr, s) > 1 {
 			return "-", fmt.Errorf("chess: fen invalid castle rights %s", castleStr)
 		}
 	}
+	upperCount := 0
+	lowerCount := 0
+	otherCount := 0
 	for _, r := range castleStr {
 		c := fmt.Sprintf("%c", r)
 		switch c {
-		case "K", "Q", "k", "q", "-":
+		case "K", "Q", "A", "B", "C", "D", "E", "F", "G", "H":
+			upperCount += 1
+		case "k", "q", "a", "b", "c", "d", "e", "f", "g", "h":
+			lowerCount += 1
+		case "-":
+			otherCount += 1
 		default:
 			return "-", fmt.Errorf("chess: fen invalid castle rights %s", castleStr)
 		}
 	}
+	if upperCount > 2 || lowerCount > 2 || otherCount > 1 || (otherCount == 1 && len(castleStr) != 1) {
+		return "-", fmt.Errorf("chess: fen invalid castle rights %s", castleStr)
+	}
+	// TODO: Verify other illegal combinations, like QA or KH
 	return CastleRights(castleStr), nil
 }
 

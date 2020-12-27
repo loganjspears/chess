@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 // Side represents a side of the board.
@@ -22,7 +23,10 @@ type CastleRights string
 
 // CanCastle returns true if the given color and side combination
 // can castle, otherwise returns false.
-func (cr CastleRights) CanCastle(c Color, side Side) bool {
+func (cr CastleRights) CanCastle(board *Board, c Color, side Side) bool {
+	if string(cr) == "-" {
+		return false
+	}
 	char := "k"
 	if side == QueenSide {
 		char = "q"
@@ -30,7 +34,28 @@ func (cr CastleRights) CanCastle(c Color, side Side) bool {
 	if c == White {
 		char = strings.ToUpper(char)
 	}
-	return strings.Contains(string(cr), char)
+	if strings.Contains(string(cr), char) {
+		return true
+	}
+	// Check for file rights.
+	for _, r := range string(cr) {
+		if (c == White) != unicode.IsUpper(r) {
+			continue
+		}
+		letter := strings.ToLower(fmt.Sprintf("%c", r))
+		if letter == "q" || letter == "k" {
+			continue
+		}
+		kingFile := board.whiteKingSq.File()
+		if c != White {
+			kingFile = board.blackKingSq.File()
+		}
+		kingFileLetter := fileChars[kingFile : kingFile+1]
+		if (side == QueenSide) == (letter < kingFileLetter) {
+			return true
+		}
+	}
+	return false
 }
 
 // String implements the fmt.Stringer interface and returns
@@ -61,11 +86,10 @@ func (pos *Position) Update(m *Move) *Position {
 	if pos.turn == Black {
 		moveCount++
 	}
-	cr := pos.CastleRights()
 	ncr := pos.updateCastleRights(m)
 	p := pos.board.Piece(m.s1)
 	halfMove := pos.halfMoveClock
-	if p.Type() == Pawn || m.HasTag(Capture) || cr != ncr {
+	if p.Type() == Pawn || m.HasTag(Capture) {
 		halfMove = 0
 	} else {
 		halfMove++
@@ -177,18 +201,132 @@ func (pos *Position) copy() *Position {
 
 func (pos *Position) updateCastleRights(m *Move) CastleRights {
 	cr := string(pos.castleRights)
+	if cr == "-" {
+		return pos.castleRights
+	}
 	p := pos.board.Piece(m.s1)
-	if p == WhiteKing || m.s1 == H1 || m.s2 == H1 {
-		cr = strings.Replace(cr, "K", "", -1)
-	}
-	if p == WhiteKing || m.s1 == A1 || m.s2 == A1 {
-		cr = strings.Replace(cr, "Q", "", -1)
-	}
-	if p == BlackKing || m.s1 == H8 || m.s2 == H8 {
-		cr = strings.Replace(cr, "k", "", -1)
-	}
-	if p == BlackKing || m.s1 == A8 || m.s2 == A8 {
-		cr = strings.Replace(cr, "q", "", -1)
+	if p == WhiteKing {
+		new := ""
+		for _, r := range cr {
+			if unicode.IsLower(r) {
+				new += string(r)
+			}
+		}
+		cr = new
+	} else if p == BlackKing {
+		new := ""
+		for _, r := range cr {
+			if unicode.IsUpper(r) {
+				new += string(r)
+			}
+		}
+		cr = new
+	} else {
+		// Rook move or Capture
+		// TODO: Should change back to KQkq format when the last outside non-castling rook moves away from rank.
+		p2 := pos.board.Piece(m.s2)
+		if p == WhiteRook || p2 == WhiteRook {
+			sq := m.s1
+			if p2 == WhiteRook {
+				sq = m.s2
+			}
+			if sq.Rank() == Rank1 || sq == m.s1 && m.s2.Rank() == Rank1 {
+				new := ""
+				kingFile := pos.board.whiteKingSq.File()
+				for _, r := range cr {
+					keep := true
+					if unicode.IsLower(r) {
+					} else if string(r) == "K" {
+						for file := FileH; file > kingFile; file -= 1 {
+							if pos.board.bbWhiteRook.Occupied(getSquare(file, Rank1)) {
+								if sq.File() == file {
+									keep = false
+								}
+								if sq.Rank() != Rank1 && sq.File() > file {
+									keep = false
+									// No longer the outer, needs to change to A-H format.
+									new += strings.ToUpper(fileChars[file : file+1])
+								}
+								break
+							}
+						}
+					} else if string(r) == "Q" {
+						for file := FileA; file < kingFile; file += 1 {
+							if pos.board.bbWhiteRook.Occupied(getSquare(file, Rank1)) {
+								if sq.File() == file {
+									keep = false
+								}
+								if sq.Rank() != Rank1 && sq.File() < file {
+									keep = false
+									// No longer the outer, needs to change to A-H format.
+									new += strings.ToUpper(fileChars[file : file+1])
+								}
+								break
+							}
+						}
+					} else {
+						if fileChars[sq.File():sq.File()+1] == strings.ToLower(string(r)) {
+							keep = false
+						}
+					}
+					if keep {
+						new += string(r)
+					}
+				}
+				cr = new
+			}
+		}
+		if p == BlackRook || p2 == BlackRook {
+			sq := m.s1
+			if p2 == BlackRook {
+				sq = m.s2
+			}
+			if sq.Rank() == Rank8 || sq == m.s1 && m.s2.Rank() == Rank8 {
+				new := ""
+				kingFile := pos.board.blackKingSq.File()
+				for _, r := range cr {
+					keep := true
+					if unicode.IsUpper(r) {
+					} else if string(r) == "k" {
+						for file := FileH; file > kingFile; file -= 1 {
+							if pos.board.bbBlackRook.Occupied(getSquare(file, Rank8)) {
+								if sq.File() == file {
+									keep = false
+								}
+								if sq.Rank() != Rank8 && sq.File() > file {
+									keep = false
+									// No longer the outer, needs to change to a-h format.
+									new += fileChars[file : file+1]
+								}
+								break
+							}
+						}
+					} else if string(r) == "q" {
+						for file := FileA; file < kingFile; file += 1 {
+							if pos.board.bbBlackRook.Occupied(getSquare(file, Rank8)) {
+								if sq.File() == file {
+									keep = false
+								}
+								if sq.Rank() != Rank8 && sq.File() < file {
+									keep = false
+									// No longer the outer, needs to change to a-h format.
+									new += fileChars[file : file+1]
+								}
+								break
+							}
+						}
+					} else {
+						if fileChars[sq.File():sq.File()+1] == string(r) {
+							keep = false
+						}
+					}
+					if keep {
+						new += string(r)
+					}
+				}
+				cr = new
+			}
+		}
 	}
 	if cr == "" {
 		cr = "-"
