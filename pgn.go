@@ -195,14 +195,14 @@ var (
 )
 
 func moveList(pgn string) ([]string, Outcome) {
+	// remove line breaks
+	text := strings.Replace(pgn, "\n", " ", -1)
 	// remove comments
-	text := removeSection("{", "}", pgn)
+	text = removeSection("{", "}", text)
 	// remove variations
 	text = removeSection(`\(`, `\)`, text)
 	// remove tag pairs
 	text = removeSection(`\[`, `\]`, text)
-	// remove line breaks
-	text = strings.Replace(text, "\n", " ", -1)
 
 	list := strings.Split(text, " ")
 	filtered := []string{}
