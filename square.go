@@ -22,6 +22,11 @@ func (sq Square) String() string {
 	return sq.File().String() + sq.Rank().String()
 }
 
+// NewSquare creates a new Square from a File and a Rank
+func NewSquare(file File, rank Rank) Square {
+	return Square(int8(file)*numOfSquaresInRow + int8(rank))
+}
+
 func (sq Square) color() Color {
 	if ((sq / 8) % 2) == (sq % 2) {
 		return Black
