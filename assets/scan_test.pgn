@@ -1,0 +1,22 @@
+[Event "Test: Ruy Lopez"]
+[Site "abc123"]
+[Result "*"]
+[UTCDate "2021.05.07"]
+[UTCTime "20:39:06"]
+[Variant "Standard"]
+[ECO "C70"]
+[Opening "Ruy Lopez: Morphy Defense, Caro Variation"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 { Morphy's defense } (3... Nf6 { Berlin defense } 4. O-O)  (3... d6 { Steinitz defense } 4. d4 exd4 5. Nxd4 Bd7) 4. Ba4 b5 { Caro variation } 5. Bb3 Nf6 (5... Nd4? { mistake } 6. Nxd4) 6. d3 *
+
+
+[Event "Test: Caro-Kann"]
+[Site "abc123"]
+[Result "*"]
+[UTCDate "2021.05.08"]
+[UTCTime "03:13:56"]
+[Variant "Standard"]
+[ECO "B13"]
+[Opening "Caro-Kann Defense: Panov Attack"]
+
+1. e4 c6 2. d4 d5 3. exd5 { Exchange variation } (3. e5 { Advance variation } 3... Bf5 4. Nf3 { Short variation } (4. h4 { Tal variation } 4... h5 5. Bd3 Bxd3)  (4. Nc3 { Van der Wiel attack } 4... e6 5. g4 Bg6) 4... e6 5. Be2 c5) 3... cxd5 4. c4 { Panov attack } 4... Nf6 5. Nc3 *

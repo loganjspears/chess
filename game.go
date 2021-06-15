@@ -85,12 +85,12 @@ func PGN(r io.Reader) (func(*Game), error) {
 	if err != nil {
 		return nil, err
 	}
-	game, err := decodePGN(string(b))
+	games, err := decodePGN(string(b), &ScannerOptsDefault)
 	if err != nil {
 		return nil, err
 	}
 	return func(g *Game) {
-		g.copy(game)
+		g.copy(games[0])
 	}, nil
 }
 
@@ -234,11 +234,11 @@ func (g *Game) MarshalText() (text []byte, err error) {
 // UnmarshalText implements the encoding.TextUnarshaler interface and
 // assumes the data is in the PGN format.
 func (g *Game) UnmarshalText(text []byte) error {
-	game, err := decodePGN(string(text))
+	games, err := decodePGN(string(text), &ScannerOptsDefault)
 	if err != nil {
 		return err
 	}
-	g.copy(game)
+	g.copy(games[0])
 	return nil
 }
 

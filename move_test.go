@@ -133,7 +133,7 @@ var (
 		{
 			m:       &Move{s1: E1, s2: G1, tags: KingSideCastle},
 			pos:     unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1"),
-			postPos: unsafeFEN("r3k2r/8/8/8/8/8/8/R4RK1 b kq - 0 1"),
+			postPos: unsafeFEN("r3k2r/8/8/8/8/8/8/R4RK1 b kq - 1 1"),
 		},
 		{
 			m:       &Move{s1: A4, s2: B3, tags: EnPassant},
@@ -143,7 +143,7 @@ var (
 		{
 			m:       &Move{s1: E1, s2: G1, tags: KingSideCastle},
 			pos:     unsafeFEN("r2qk2r/pp1n1ppp/2pbpn2/3p4/2PP4/1PNQPN2/P4PPP/R1B1K2R w KQkq - 1 9"),
-			postPos: unsafeFEN("r2qk2r/pp1n1ppp/2pbpn2/3p4/2PP4/1PNQPN2/P4PPP/R1B2RK1 b kq - 0 9"),
+			postPos: unsafeFEN("r2qk2r/pp1n1ppp/2pbpn2/3p4/2PP4/1PNQPN2/P4PPP/R1B2RK1 b kq - 2 9"),
 		},
 	}
 )

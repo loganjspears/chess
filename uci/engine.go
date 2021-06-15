@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strconv"
 	"sync"
 )
 
@@ -55,8 +56,18 @@ func New(path string, opts ...func(e *Engine)) (*Engine, error) {
 	for _, opt := range opts {
 		opt(e)
 	}
-	go e.cmd.Run()
+	err = e.cmd.Start()
+	if err != nil {
+		return nil, fmt.Errorf("uci: failed to start executable %s: %w", path, err)
+	}
+	go e.cmd.Wait()
 	return e, nil
+}
+
+func (e *Engine) Renice() error {
+	cmd := exec.Command("renice", "-n", "19", "-p", strconv.FormatInt(int64(e.cmd.Process.Pid), 10))
+
+	return cmd.Run()
 }
 
 // ID returns the id values returned from the most recent CmdUCI invocation.  It includes

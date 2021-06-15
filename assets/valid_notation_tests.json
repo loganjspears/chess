@@ -17,7 +17,7 @@
 	},
 	{
 		"pos1" : "r2qk2r/pp1n1ppp/2pbpn2/3p4/2PP4/1PNQPN2/P4PPP/R1B1K2R w KQkq - 1 9",
-		"pos2" : "r2qk2r/pp1n1ppp/2pbpn2/3p4/2PP4/1PNQPN2/P4PPP/R1B2RK1 b kq - 0 9",
+		"pos2" : "r2qk2r/pp1n1ppp/2pbpn2/3p4/2PP4/1PNQPN2/P4PPP/R1B2RK1 b kq - 2 9",
 		"algText" : "O-O",
 		"longAlgText" : "O-O",
 		"uciText" : "e1g1",
@@ -73,7 +73,7 @@
 	},
 	{
 		"pos1" : "rnbk1b1r/p3pppp/5n2/2p1p3/5B2/2N2P2/PPP3PP/R3KBNR w KQ - 0 10",
-		"pos2" : "rnbk1b1r/p3pppp/5n2/2p1p3/5B2/2N2P2/PPP3PP/2KR1BNR b - - 0 10",
+		"pos2" : "rnbk1b1r/p3pppp/5n2/2p1p3/5B2/2N2P2/PPP3PP/2KR1BNR b - - 1 10",
 		"algText" : "O-O-O+",
 		"longAlgText" : "O-O-O+",
 		"uciText" : "e1c1",
